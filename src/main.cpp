@@ -17,8 +17,8 @@
 #define LED_RED 51
 #define LED_GREEN 53
 
-#define NUM_SENSORS 6
-uint8_t PINS[NUM_SENSORS] = {A0, A1, A2, A3, A4, A5};
+#define NUM_SENSORS 3
+uint8_t PINS[NUM_SENSORS] = {A0, A2, A4};
 PanelSensor panel(PINS, NUM_SENSORS);
 
 Motor motor[2] = {
@@ -32,6 +32,17 @@ uint8_t ps2Error = 0;
 bool isAuto = true;
 uint8_t lastError = 0;
 
+void displayIR()
+{
+    Serial.print(digitalRead(IR_LEFT));
+    Serial.print("\t");
+    Serial.print(digitalRead(IR_MID_LEFT));
+    Serial.print("\t");
+    Serial.print(digitalRead(IR_MID_RIGHT));
+    Serial.print("\t");
+    Serial.println(digitalRead(IR_RIGHT));
+}
+
 void displayColor() {
     uint8_t value = panel.getColor();
     uint8_t color = value == 0 ? color : value;
@@ -39,9 +50,12 @@ void displayColor() {
     digitalWrite(LED_BLUE, LOW);
     digitalWrite(LED_RED, LOW);
     digitalWrite(LED_GREEN, LOW);
-    if      (color == 1) digitalWrite(LED_RED, HIGH);
-    else if (color == 2) digitalWrite(LED_GREEN, HIGH);
-    else                 digitalWrite(LED_BLUE, HIGH);
+    // if      (color == 1) digitalWrite(LED_RED, HIGH);
+    // else if (color == 2) digitalWrite(LED_GREEN, HIGH);
+    // else                 digitalWrite(LED_BLUE, HIGH);
+    if      (panel.getRaw(0) > panel.getRaw(1) && panel.getRaw(0) < panel.getRaw(2)) digitalWrite(LED_GREEN, HIGH);
+    else if (panel.getRaw(0) > panel.getRaw(1) && panel.getRaw(1) < panel.getRaw(2)) digitalWrite(LED_BLUE, HIGH);
+    else                                                                             digitalWrite(LED_RED, HIGH);
 }
 
 bool lineTrack() {
@@ -166,4 +180,6 @@ void setup() {
 void loop() {     
     if (isAuto) isAuto = lineTrack();
     else teleOp();
+    // displayIR();
+    // panel.rawSensor();
 }
